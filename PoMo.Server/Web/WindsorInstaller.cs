@@ -8,6 +8,7 @@ using Castle.Windsor;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using PoMo.Common.Json;
+using PoMo.Server.Properties;
 
 namespace PoMo.Server.Web
 {
@@ -18,8 +19,9 @@ namespace PoMo.Server.Web
             container
                 .Register(Component.For<IContractResolver>().ImplementedBy<JsonContractResolver>())
                 .Register(Component.For<JsonSerializer>().UsingFactory((IContractResolver contractResolver) => new JsonSerializer { ContractResolver = contractResolver }))
-                .Register(Classes.FromThisAssembly().BasedOn<IOwinStartup>())
                 .Register(Component.For<IWebManager>().ImplementedBy<WebManager>())
+                .Register(Component.For<IWebSettings>().Instance(Settings.Default))
+                .Register(Classes.FromThisAssembly().BasedOn<IOwinStartup>())
                 .Kernel.Resolver.AddSubResolver(new OwinStartupDependencyResolver(container.Kernel));
         }
 
