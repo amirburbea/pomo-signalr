@@ -141,14 +141,14 @@ namespace PoMo.Client.Views
                     {
                         foreach (ColumnChange columnChange in ((RowColumnsChanged)rowChange).ColumnChanges)
                         {
-                            DataColumn column = this._dataTable.Columns[columnChange.ColumnName];
+                            DataColumn column = this._dataTable.Columns[columnChange.ColumnOrdinal];
                             if (columnChange.Value != null && columnChange.Value != DBNull.Value)
                             {
                                 if (!column.DataType.IsInstanceOfType(columnChange.Value))
                                 {
                                     columnChange.Value = Convert.ChangeType(columnChange.Value, column.DataType);
                                 }
-                                if (columnChange.ColumnName == "Pnl")
+                                if (column.ColumnName == "Pnl")
                                 {
                                     // Delta in Pnl
                                     pnl += (decimal)columnChange.Value - rowPnl;

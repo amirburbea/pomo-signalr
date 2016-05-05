@@ -2,7 +2,7 @@
 {
     public sealed class ColumnChange
     {
-        public string ColumnName
+        public int ColumnOrdinal
         {
             get;
             set;
