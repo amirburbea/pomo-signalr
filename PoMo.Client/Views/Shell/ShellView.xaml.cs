@@ -197,6 +197,21 @@ namespace PoMo.Client.Views.Shell
             }
         }
 
+        private void TabControl_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton != MouseButton.Middle)
+            {
+                return;
+            }
+            DependencyObject tabItem = (e.OriginalSource as DependencyObject)?.FindVisualTreeAncestor(typeof(TabItem));
+            if (tabItem == null)
+            {
+                return;
+            }
+            ShellView.CloseTabCommand.Execute(tabItem, null);
+            e.Handled = true;
+        }
+
         private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (this._ignoreSelectionChangedCounter != 0 || !this.TabControl.Equals(e.OriginalSource))
