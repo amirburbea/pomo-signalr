@@ -58,7 +58,7 @@ namespace PoMo.Client.Views
                 }
                 else
                 {
-                    this.UnsubscribeAsync();
+                    this.UnsubscribeProjection(this.CreateBusyScope());
                     this._dataTable = null;
                     this.Data = null;
                 }
@@ -176,7 +176,7 @@ namespace PoMo.Client.Views
         private void GetData()
         {
             Task.Delay(500) // Wait 1/2 a second to give the app time to flush the dispatcher.
-                .ContinueWith(task => this.SubscribeAsync(), TaskScheduler.Default)
+                .ContinueWith(task => this.SubscribeProjection(this.CreateBusyScope()), TaskScheduler.Default)
                 .Unwrap()
                 .ContinueWith(
                     task => this.Dispatcher.Invoke(new Action<DataTable>(this.OnReceiveDataTable), task.Result),
@@ -192,16 +192,6 @@ namespace PoMo.Client.Views
             }
             this.Data = new DataBoundObjectCollection(this._dataTable = dataTable);
             this.Pnl = dataTable.Rows.Cast<DataRow>().Sum(row => row.Field<decimal>("Pnl"));
-        }
-
-        private Task<DataTable> SubscribeAsync()
-        {
-            return this.SubscribeProjection(this.CreateBusyScope());
-        }
-
-        private Task UnsubscribeAsync()
-        {
-            return this.UnsubscribeProjection(this.CreateBusyScope());
         }
     }
 }
