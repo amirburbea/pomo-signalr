@@ -77,6 +77,16 @@ namespace PoMo.Client.Views
             }
         }
 
+        protected abstract Func<IDisposable, Task<DataTable>> SubscribeProjection
+        {
+            get;
+        }
+
+        protected abstract Func<IDisposable, Task> UnsubscribeProjection
+        {
+            get;
+        }
+
         public override void Dispose()
         {
             this.IsActive = false;
@@ -163,10 +173,6 @@ namespace PoMo.Client.Views
             this.Pnl = pnl;
         }
 
-        protected abstract Task<DataTable> SubscribeAsync();
-
-        protected abstract Task UnsubscribeAsync();
-
         private void GetData()
         {
             Task.Delay(500) // Wait 1/2 a second to give the app time to flush the dispatcher.
@@ -186,6 +192,16 @@ namespace PoMo.Client.Views
             }
             this.Data = new DataBoundObjectCollection(this._dataTable = dataTable);
             this.Pnl = dataTable.Rows.Cast<DataRow>().Sum(row => row.Field<decimal>("Pnl"));
+        }
+
+        private Task<DataTable> SubscribeAsync()
+        {
+            return this.SubscribeProjection(this.CreateBusyScope());
+        }
+
+        private Task UnsubscribeAsync()
+        {
+            return this.UnsubscribeProjection(this.CreateBusyScope());
         }
     }
 }
