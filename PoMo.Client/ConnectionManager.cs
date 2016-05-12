@@ -27,15 +27,15 @@ namespace PoMo.Client
             get;
         }
 
-        Task<PortfolioModel[]> GetPortfoliosAsync(IDisposable busyScope);
+        Task<PortfolioModel[]> GetPortfoliosAsync();
 
-        Task<DataTable> SubscribeToFirmSummaryAsync(IDisposable busyScope);
+        Task<DataTable> SubscribeToFirmSummaryAsync();
 
-        Task<DataTable> SubscribeToPortfolioAsync(string portfolioId, IDisposable busyScope);
+        Task<DataTable> SubscribeToPortfolioAsync(string portfolioId);
 
-        Task UnsubscribeFromFirmSummaryAsync(IDisposable busyScope);
+        Task UnsubscribeFromFirmSummaryAsync();
 
-        Task UnsubscribeFromPortfolioAsync(string portfolioId, IDisposable busyScope);
+        Task UnsubscribeFromPortfolioAsync(string portfolioId);
     }
 
     internal sealed class ConnectionManager : IConnectionManager, IDisposable
@@ -102,54 +102,39 @@ namespace PoMo.Client
             }
         }
 
-        public async Task<PortfolioModel[]> GetPortfoliosAsync(IDisposable busyScope)
+        public async Task<PortfolioModel[]> GetPortfoliosAsync()
         {
-            using (busyScope)
+            using (HttpClient client = new HttpClient())
             {
-                using (HttpClient client = new HttpClient())
+                string text = await client.GetStringAsync(this._baseUri + "api/portfolios").ConfigureAwait(false);
+                using (TextReader textReader = new StringReader(text))
                 {
-                    string text = await client.GetStringAsync(this._baseUri + "api/portfolios").ConfigureAwait(false);
-                    using (TextReader textReader = new StringReader(text))
+                    using (JsonTextReader jsonReader = new JsonTextReader(textReader))
                     {
-                        using (JsonTextReader jsonReader = new JsonTextReader(textReader))
-                        {
-                            return this._jsonSerializer.Deserialize<PortfolioModel[]>(jsonReader);
-                        }
+                        return this._jsonSerializer.Deserialize<PortfolioModel[]>(jsonReader);
                     }
                 }
             }
         }
 
-        public async Task<DataTable> SubscribeToFirmSummaryAsync(IDisposable busyScope)
+        public Task<DataTable> SubscribeToFirmSummaryAsync()
         {
-            using (busyScope)
-            {
-                return await this._hubProxy.Invoke<DataTable>("SubscribeToFirmSummary").ConfigureAwait(false);
-            }
+            return this._hubProxy.Invoke<DataTable>("SubscribeToFirmSummary");
         }
 
-        public async Task<DataTable> SubscribeToPortfolioAsync(string portfolioId, IDisposable busyScope)
+        public Task<DataTable> SubscribeToPortfolioAsync(string portfolioId)
         {
-            using (busyScope)
-            {
-                return await this._hubProxy.Invoke<DataTable>("SubscribeToPortfolio", portfolioId).ConfigureAwait(false);
-            }
+            return this._hubProxy.Invoke<DataTable>("SubscribeToPortfolio", portfolioId);
         }
 
-        public async Task UnsubscribeFromFirmSummaryAsync(IDisposable busyScope)
+        public Task UnsubscribeFromFirmSummaryAsync()
         {
-            using (busyScope)
-            {
-                await this._hubProxy.Invoke("UnsubscribeFromFirmSummary").ConfigureAwait(false);
-            }
+            return this._hubProxy.Invoke("UnsubscribeFromFirmSummary");
         }
 
-        public async Task UnsubscribeFromPortfolioAsync(string portfolioId, IDisposable busyScope)
+        public Task UnsubscribeFromPortfolioAsync(string portfolioId)
         {
-            using (busyScope)
-            {
-                await this._hubProxy.Invoke("UnsubscribeFromPortfolio", portfolioId).ConfigureAwait(false);
-            }
+            return this._hubProxy.Invoke("UnsubscribeFromPortfolio", portfolioId);
         }
 
         private void HubConnection_StateChanged(StateChange state)
